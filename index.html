@@ -7,19 +7,19 @@
     74  CSS — design tokens, login, layout, sidebar, right panel
   1089  CSS — pro chart, toolbar, indicator drawer, drawings
   1383  CSS — Android app shell + guest mode
-  1473  HTML — login modal, top bar, trade sidebar, chart panel, right panel
-  1832  JS — ProChart engine (candles, indicators, drawing tools)
-  5675  JS APP — state & settings
-  5906  JS APP — Deriv connection (REST -> OTP -> WebSocket, accounts)
-  6403  JS APP — markets, ticks, history, chart wiring
-  7046  JS APP — sound, risk manager, OHLC + indicator engine
-  7460  JS APP — AI analyser + 4-phase AI engine
-  8811  JS APP — auto trader + trade placement
-  9123  JS APP — UI render, backtester, toasts, theme, fullscreen
-  9990  JS APP — connection watchdog
- 10046  JS APP — Lloyds AI engine
- 10390  JS — cloud sync (Supabase)
- 10474  JS — guest mode + Android shell (nav, sheets, install)
+  1488  HTML — login modal, top bar, trade sidebar, chart panel, right panel
+  1847  JS — ProChart engine (candles, indicators, drawing tools)
+  5690  JS APP — state & settings
+  5921  JS APP — Deriv connection (REST -> OTP -> WebSocket, accounts)
+  6418  JS APP — markets, ticks, history, chart wiring
+  7061  JS APP — sound, risk manager, OHLC + indicator engine
+  7475  JS APP — AI analyser + 4-phase AI engine
+  8826  JS APP — auto trader + trade placement
+  9138  JS APP — UI render, backtester, toasts, theme, fullscreen
+ 10005  JS APP — connection watchdog
+ 10061  JS APP — Lloyds AI engine
+ 10405  JS — cloud sync (Supabase)
+ 10489  JS — guest mode + Android shell (nav, sheets, install)
 
  SEARCH TAGS
   [GUEST]  hooks that let the app run on the public Deriv feed without logging in
@@ -1386,9 +1386,9 @@ body.sb-collapsed .draw-tb { left:26px; }
 :root{--sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);--bn-h:64px;--ease:cubic-bezier(.32,.72,0,1);--spring:cubic-bezier(.34,1.56,.64,1)}
 html{background:var(--bg);-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
 body{height:100dvh;overscroll-behavior:none;-webkit-font-smoothing:antialiased;touch-action:manipulation}
-#app{height:100dvh;animation:appIn .6s var(--ease) both}
-@keyframes appIn{from{opacity:0;transform:scale(.985)}}
-.login-wrap{animation:lwIn .8s var(--ease) both}
+#app{height:100dvh;animation:appIn .5s var(--ease) backwards}
+@keyframes appIn{from{opacity:0}} /* opacity only: a lingering transform made #app trap the sheets under the dim layer */
+.login-wrap{animation:lwIn .8s var(--ease) backwards}
 @keyframes lwIn{from{opacity:0;transform:translateY(28px) scale(.96)}}
 #loginScreen{padding:var(--sat) 0 var(--sab)}
 .login-wrap input{font-size:16px}
@@ -1399,7 +1399,7 @@ button:not(.trade-btn):active{transform:scale(.96)}
 .rip{position:absolute;border-radius:50%;background:currentColor;opacity:.2;transform:scale(0);animation:rip .6s var(--ease) forwards;pointer-events:none}
 @keyframes rip{to{transform:scale(1);opacity:0}}
 *{scrollbar-width:thin;scrollbar-color:var(--border2) transparent}
-.bn,.scrim,.more,.grab{display:none}
+.bn,.scrim,.more,.grab,.mkt-pill{display:none}
 @media (max-width:900px){
  body.in-app .bn{display:grid}body.in-app .scrim,body.in-app .more{display:block}
  #app{padding-bottom:calc(var(--bn-h) + var(--sab))}
@@ -1414,7 +1414,12 @@ button:not(.trade-btn):active{transform:scale(.96)}
  /* chart + sheets */
  .workspace{flex-direction:column}
  .sidebar,.sidebar.sb-collapsed,.right-panel,.right-panel.rp-collapsed{position:fixed!important;left:0;right:0;bottom:0;top:auto;width:100%!important;min-width:0!important;max-width:none!important;display:flex!important;flex-direction:column;border:0!important;border-top:1px solid var(--border2)!important;border-radius:24px 24px 0 0;z-index:60;background:var(--surface);overflow:hidden!important;padding-bottom:calc(var(--bn-h) + var(--sab));transform:translate3d(0,105%,0);transition:transform .5s var(--ease),box-shadow .5s;will-change:transform;box-shadow:none}
- .sidebar,.sidebar.sb-collapsed{height:min(68dvh,calc(100dvh - var(--sat) - 70px))}
+ .sidebar,.sidebar.sb-collapsed{height:min(86dvh,calc(100dvh - var(--sat) - 24px));overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+ .sidebar>*{flex-shrink:0}
+ .sidebar>.grab{position:sticky;top:0;z-index:6;background:var(--surface)}
+ .sidebar-scroll{flex:none!important;overflow:visible!important}
+ .mkt-list{max-height:44dvh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+ .right-content,#llHost{min-height:0}
  .right-panel,.right-panel.rp-collapsed{height:min(80dvh,calc(100dvh - var(--sat) - 40px))}
  body.v-trade .sidebar,body.v-pos .right-panel{transform:none;box-shadow:0 -24px 70px rgba(0,0,0,.45)}
  .sb-head{padding-top:2px}
@@ -1425,9 +1430,10 @@ button:not(.trade-btn):active{transform:scale(.96)}
  .grab::after{content:'';position:absolute;left:50%;top:10px;width:40px;height:4px;margin-left:-20px;border-radius:4px;background:var(--border2)}
  .trade-btn,.q-btn,.cat-btn{min-height:46px}
  .sidebar-footer{padding-bottom:12px}
- .scrim{position:fixed;inset:0;z-index:55;background:rgba(0,0,0,.5);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .4s var(--ease)}
- body.v-trade .scrim{opacity:.35;pointer-events:auto}
- body.v-pos .scrim,body.v-more .scrim{opacity:1;pointer-events:auto}
+ /* dim layer lives INSIDE #app (no blur) so it always sits under the sheets */
+ #app::after{content:'';position:fixed;inset:0;z-index:50;background:#000;opacity:0;pointer-events:none;transition:opacity .4s var(--ease)}
+ body.v-trade #app::after{opacity:.4;pointer-events:auto}
+ body.v-pos #app::after,body.v-more #app::after{opacity:.65;pointer-events:auto}
  #toastContainer{left:12px;right:12px;bottom:calc(var(--bn-h) + var(--sab) + 12px);align-items:flex-end}
  .open-trades-badge{right:12px!important}
  /* bottom navigation */
@@ -1453,6 +1459,15 @@ button:not(.trade-btn):active{transform:scale(.96)}
  .tile svg{width:24px;height:24px;color:var(--cyan)}
  .tile.danger svg{color:var(--red)}
  .more-f{margin-top:16px;text-align:center;font:400 11px var(--sans);color:var(--muted)}
+ /* market picker pill (top bar) + collapsible markets section */
+ .topbar-brand{display:none}
+ .mkt-pill{display:inline-flex;align-items:center;gap:6px;max-width:52vw;height:32px;padding:0 12px;border-radius:16px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);font:600 13px var(--sans)}
+ .mkt-pill .mp-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .mkt-pill svg{width:14px;height:14px;flex:none;color:var(--cyan)}
+ .mkt-sec>.sec-title{display:flex;align-items:center;justify-content:space-between;min-height:38px;cursor:pointer}
+ .mkt-sec>.sec-title::after{content:'';width:8px;height:8px;margin-right:4px;border-right:2px solid var(--cyan);border-bottom:2px solid var(--cyan);transform:rotate(45deg);transition:transform .35s var(--ease)}
+ .mkt-sec.mkt-collapsed>.sec-title::after{transform:rotate(-45deg)}
+ .mkt-sec.mkt-collapsed>:not(.sec-title){display:none}
 }
 @media (min-width:901px){.rip{opacity:.12}}
 @media (prefers-reduced-motion:reduce){.sidebar,.right-panel,.more,.scrim,.bn-pill,.bn-item svg,#app,.login-wrap{transition-duration:.01ms!important;animation-duration:.01ms!important}}
@@ -10555,7 +10570,6 @@ const NAV=[
  ['trade','Trade','<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>'],
  ['ai','Lloyds AI','<path d="M12 3l2 6 6 2-6 2-2 6-2-6-6-2 6-2z"/>'],
  ['more','More','<circle cx="5" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="19" cy="12" r="1.4"/>']];
-const scrim=document.createElement('div');scrim.className='scrim';
 const nav=document.createElement('nav');nav.className='bn';nav.setAttribute('aria-label','Primary');
 nav.innerHTML='<span class="bn-pill"></span>'+NAV.map(n=>'<button class="bn-item'+(n[0]==='trade'?' bn-main':'')+'" data-v="'+n[0]+'" aria-label="'+n[1]+'">'+ic(n[2])+'<span>'+n[1]+'</span></button>').join('');
 let dip=null;addEventListener('beforeinstallprompt',e=>{e.preventDefault();dip=e});
@@ -10569,7 +10583,7 @@ const TILES=[
 if(!installed)TILES.splice(3,0,['install','Install app','<path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/>']);
 const more=document.createElement('div');more.className='more';
 more.innerHTML='<div class="grab"></div><div class="more-h">Menu</div><div class="tiles">'+TILES.map(t=>'<button class="tile'+(t[0]==='logout'?' danger':'')+'" data-a="'+t[0]+'">'+ic(t[2])+t[1]+'</button>').join('')+'</div><div class="more-f">Deriv Smart Trader Pro</div>';
-B.append(scrim,nav,more);
+B.append(nav,more);
 [sb,rp].forEach(el=>{if(el){const g=document.createElement('div');g.className='grab';el.insertBefore(g,el.firstChild)}});
 
 let cur='chart',pushed=false;const SHEET={pos:1,ai:1,trade:1,more:1};
@@ -10585,7 +10599,7 @@ function setView(v,fromPop){
 }
 addEventListener('popstate',()=>{pushed=false;if(cur!=='chart')setView('chart',true)});
 nav.addEventListener('click',e=>{const b=e.target.closest('.bn-item');if(!b)return;vib();const v=b.dataset.v;setView(v===cur&&v!=='chart'?'chart':v)});
-scrim.addEventListener('click',()=>setView('chart'));
+app&&app.addEventListener('click',e=>{if(e.target===app&&cur!=='chart')setView('chart')}); /* tap the dimmed area to close */
 more.addEventListener('click',e=>{const t=e.target.closest('.tile');if(!t)return;vib();const a=t.dataset.a,go=id=>{const x=document.getElementById(id);if(x)x.click()};
  if(a==='reload'){location.reload();return}
  if(a==='install'){if(dip){dip.prompt();dip=null}else if(typeof showToast==='function')showToast('Open your browser menu → Install app','info');return}
@@ -10610,6 +10624,15 @@ document.addEventListener('pointerdown',e=>{
  d.style.cssText='width:'+s+'px;height:'+s+'px;left:'+(e.clientX-r.left-s/2)+'px;top:'+(e.clientY-r.top-s/2)+'px';
  t.classList.add('rpl');t.appendChild(d);setTimeout(()=>{d.remove();t.classList.remove('rpl')},620)},{passive:true});
 
+/* markets: collapsible section, top-bar picker pill, back to chart after picking */
+const mk=document.querySelector('.sidebar-scroll .sec');
+if(mk){mk.classList.add('mkt-sec');const st=mk.querySelector('.sec-title');st&&st.addEventListener('click',()=>{if(matchMedia('(max-width:900px)').matches){mk.classList.toggle('mkt-collapsed');vib()}})}
+const tbar=document.querySelector('.topbar'),pill=document.createElement('button');
+pill.className='mkt-pill';pill.setAttribute('aria-label','Choose market');pill.innerHTML='<span class="mp-name">Markets</span>'+ic('<path d="M6 9l6 6 6-6"/>');
+if(tbar)tbar.insertBefore(pill,tbar.firstChild);
+pill.addEventListener('click',()=>{vib();if(mk)mk.classList.remove('mkt-collapsed');setView('trade');if(sb)sb.scrollTop=0});
+let lastName='';setInterval(()=>{try{const n=selectedMarket&&selectedMarket.name;if(n&&n!==lastName){lastName=n;pill.firstChild.textContent=n}}catch(e){}},500);
+const ml=$('#mktList');if(ml)ml.addEventListener('click',e=>{if(e.target.closest('.mkt-item')&&matchMedia('(max-width:900px)').matches)setTimeout(()=>setView('chart'),240)});
 /* show nav only after login */
 const inApp=()=>B.classList.toggle('in-app',!!app&&getComputedStyle(app).display!=='none');
 if(app){new MutationObserver(inApp).observe(app,{attributes:true,attributeFilter:['style','class']});inApp()}
