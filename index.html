@@ -7,19 +7,19 @@
     74  CSS — design tokens, login, layout, sidebar, right panel
   1089  CSS — pro chart, toolbar, indicator drawer, drawings
   1383  CSS — Android app shell + guest mode
-  1488  HTML — login modal, top bar, trade sidebar, chart panel, right panel
-  1847  JS — ProChart engine (candles, indicators, drawing tools)
-  5690  JS APP — state & settings
-  5921  JS APP — Deriv connection (REST -> OTP -> WebSocket, accounts)
-  6418  JS APP — markets, ticks, history, chart wiring
-  7061  JS APP — sound, risk manager, OHLC + indicator engine
-  7475  JS APP — AI analyser + 4-phase AI engine
-  8826  JS APP — auto trader + trade placement
-  9138  JS APP — UI render, backtester, toasts, theme, fullscreen
- 10005  JS APP — connection watchdog
- 10061  JS APP — Lloyds AI engine
- 10405  JS — cloud sync (Supabase)
- 10489  JS — guest mode + Android shell (nav, sheets, install)
+  1502  HTML — login modal, top bar, trade sidebar, chart panel, right panel
+  1861  JS — ProChart engine (candles, indicators, drawing tools)
+  5704  JS APP — state & settings
+  5935  JS APP — Deriv connection (REST -> OTP -> WebSocket, accounts)
+  6432  JS APP — markets, ticks, history, chart wiring
+  7075  JS APP — sound, risk manager, OHLC + indicator engine
+  7489  JS APP — AI analyser + 4-phase AI engine
+  8840  JS APP — auto trader + trade placement
+  9152  JS APP — UI render, backtester, toasts, theme, fullscreen
+ 10019  JS APP — connection watchdog
+ 10075  JS APP — Lloyds AI engine
+ 10419  JS — cloud sync (Supabase)
+ 10503  JS — guest mode + Android shell (nav, sheets, install)
 
  SEARCH TAGS
   [GUEST]  hooks that let the app run on the public Deriv feed without logging in
@@ -29,7 +29,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#131618">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1468,6 +1468,20 @@ button:not(.trade-btn):active{transform:scale(.96)}
  .mkt-sec>.sec-title::after{content:'';width:8px;height:8px;margin-right:4px;border-right:2px solid var(--cyan);border-bottom:2px solid var(--cyan);transform:rotate(45deg);transition:transform .35s var(--ease)}
  .mkt-sec.mkt-collapsed>.sec-title::after{transform:rotate(-45deg)}
  .mkt-sec.mkt-collapsed>:not(.sec-title){display:none}
+ /* top bar can never out-grow the screen (demo accounts show a larger balance than real ones) */
+ html,body{max-width:100%;overflow-x:hidden}
+ #app{width:100%;max-width:100vw}
+ .topbar>*{min-width:0}
+ .topbar-right{flex:0 1 auto;min-width:0;gap:8px}
+ .mkt-pill{flex:0 1 auto;min-width:0;max-width:38vw}
+ .bal-group{flex:0 1 auto;min-width:0;gap:4px}
+ .bal-val{min-width:0;max-width:30vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .bal-cur{flex:none}
+ .acct-switcher{flex:0 1 auto;min-width:0}
+ .acct-btn{max-width:36vw;min-width:0;gap:5px;padding:5px 8px}
+ .acct-btn .account-id{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .acct-badge,.acct-caret,.conn-status{flex:none}
+ .acct-dropdown{max-width:calc(100vw - 24px)}
 }
 @media (min-width:901px){.rip{opacity:.12}}
 @media (prefers-reduced-motion:reduce){.sidebar,.right-panel,.more,.scrim,.bn-pill,.bn-item svg,#app,.login-wrap{transition-duration:.01ms!important;animation-duration:.01ms!important}}
